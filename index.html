@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorAlert - Mission Control</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app" class="cockpit">
+        <!-- Header Control Panel -->
+        <header class="control-panel">
+            <div class="system-status">
+                <h1 class="system-title">VECTORALERT</h1>
+                <div class="status-indicators">
+                    <span id="location-status" class="status-indicator">LOC: --</span>
+                    <span id="api-status" class="status-indicator">API: OFFLINE</span>
+                    <span id="scan-status" class="status-indicator">SCAN: IDLE</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="start-scan" class="control-btn scan-btn">START SCAN</button>
+                <button id="settings-btn" class="control-btn settings-btn">SETTINGS</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard">
+            <!-- Radar Display -->
+            <section class="radar-section">
+                <div class="radar-container">
+                    <svg id="radar-display" class="radar-svg" viewBox="0 0 400 400">
+                        <!-- Radar circles -->
+                        <circle cx="200" cy="200" r="50" fill="none" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+                        <circle cx="200" cy="200" r="100" fill="none" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+                        <circle cx="200" cy="200" r="150" fill="none" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+                        <circle cx="200" cy="200" r="200" fill="none" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+                        
+                        <!-- Crosshairs -->
+                        <line x1="200" y1="0" x2="200" y2="400" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+                        <line x1="0" y1="200" x2="400" y2="200" stroke="#00ff00" stroke-width="0.5" opacity="0.3"/>
+                        
+                        <!-- Radar sweep -->
+                        <line id="radar-sweep" x1="200" y1="200" x2="200" y2="0" stroke="#00ff00" stroke-width="2" opacity="0.8"/>
+                        
+                        <!-- Aircraft markers will be added dynamically -->
+                        <g id="aircraft-markers"></g>
+                    </svg>
+                    <div class="radar-info">
+                        <span id="radar-range">RANGE: 5km</span>
+                        <span id="aircraft-count">AIRCRAFT: 0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aircraft Data Table -->
+            <section class="data-section">
+                <div class="table-container">
+                    <h2 class="section-title">AIRSPACE DATA</h2>
+                    <div class="table-wrapper">
+                        <table id="aircraft-table" class="aircraft-table">
+                            <thead>
+                                <tr>
+                                    <th>CALLSIGN</th>
+                                    <th>ICAO24</th>
+                                    <th>ALTITUDE</th>
+                                    <th>VELOCITY</th>
+                                    <th>HEADING</th>
+                                    <th>DISTANCE</th>
+                                    <th>TYPE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aircraft-tbody">
+                                <tr class="no-data">
+                                    <td colspan="7">NO AIRCRAFT DETECTED</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Alert Modal -->
+        <div id="alert-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="alert-header">
+                    <h2 class="alert-title">⚠ INTERCEPTION DETECTED</h2>
+                    <button id="close-alert" class="close-btn">&times;</button>
+                </div>
+                <div class="alert-body">
+                    <div class="target-info">
+                        <h3>TARGET AIRCRAFT</h3>
+                        <div class="target-data">
+                            <span id="target-callsign">--</span>
+                            <span id="target-icao">--</span>
+                            <span id="target-altitude">--</span>
+                            <span id="target-velocity">--</span>
+                            <span id="target-heading">--</span>
+                            <span id="target-distance">--</span>
+                        </div>
+                    </div>
+                    <div class="alert-timestamp">
+                        <span id="alert-time">--:--:--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <div class="settings-content">
+                <h2 class="settings-title">SYSTEM CONFIGURATION</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="watch-radius">WATCH RADIUS (km)</label>
+                        <input type="number" id="watch-radius" min="1" max="50" value="5" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="target-aircraft">TARGET AIRCRAFT TYPE</label>
+                        <input type="text" id="target-aircraft" placeholder="e.g., B777, A320" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="scan-interval">SCAN INTERVAL (seconds)</label>
+                        <input type="number" id="scan-interval" min="10" max="60" value="20" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="sound-enabled">ENABLE SOUND ALERTS</label>
+                        <input type="checkbox" id="sound-enabled" checked class="form-checkbox">
+                    </div>
+                    <div class="form-actions">
+                        <button id="save-settings" class="control-btn">SAVE</button>
+                        <button id="cancel-settings" class="control-btn">CANCEL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <span id="next-scan">NEXT SCAN: --</span>
+                <span id="api-calls">API CALLS: 0</span>
+            </div>
+            <div class="status-right">
+                <span id="system-time">--:--:--</span>
+                <span id="coordinates">LAT: -- LON: --</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/geo.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/alerts.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

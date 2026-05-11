@@ -1,0 +1,382 @@
+/* VectorAlert Component-Specific Styles */
+
+/* Radar Animation */
+@keyframes radar-sweep {
+    from {
+        transform: rotate(0deg);
+        transform-origin: 200px 200px;
+    }
+    to {
+        transform: rotate(360deg);
+        transform-origin: 200px 200px;
+    }
+}
+
+.radar-sweep-active {
+    animation: radar-sweep 4s linear infinite;
+}
+
+/* Aircraft Markers */
+.aircraft-marker {
+    fill: var(--text-primary);
+    filter: drop-shadow(0 0 3px var(--text-primary));
+}
+
+.aircraft-marker.target {
+    fill: var(--alert-red);
+    filter: drop-shadow(0 0 8px var(--alert-red));
+    animation: target-blink 1s infinite;
+}
+
+@keyframes target-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Distance Rings */
+.distance-ring {
+    fill: none;
+    stroke: var(--text-dim);
+    stroke-width: 0.5;
+    stroke-dasharray: 2, 4;
+}
+
+/* Alert States */
+.app-alert {
+    border-color: var(--alert-red) !important;
+    box-shadow: 0 0 20px var(--alert-red) !important;
+    animation: alert-border-pulse 1s infinite;
+}
+
+@keyframes alert-border-pulse {
+    0%, 100% { 
+        border-color: var(--alert-red);
+        box-shadow: 0 0 20px var(--alert-red);
+    }
+    50% { 
+        border-color: var(--alert-blue);
+        box-shadow: 0 0 20px var(--alert-blue);
+    }
+}
+
+/* Connection Status Indicators */
+.status-online {
+    color: var(--text-primary) !important;
+    border-color: var(--text-primary) !important;
+    background: var(--panel-bg) !important;
+}
+
+.status-offline {
+    color: var(--alert-red) !important;
+    border-color: var(--alert-red) !important;
+    background: rgba(255, 0, 0, 0.1) !important;
+}
+
+.status-warning {
+    color: var(--warning-yellow) !important;
+    border-color: var(--warning-yellow) !important;
+    background: rgba(255, 170, 0, 0.1) !important;
+}
+
+/* Loading States */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.2), transparent);
+    animation: loading-sweep 2s infinite;
+}
+
+@keyframes loading-sweep {
+    to {
+        left: 100%;
+    }
+}
+
+/* Button States */
+.btn-scanning {
+    background: var(--scan-active) !important;
+    color: var(--bg-primary) !important;
+    border-color: var(--scan-active) !important;
+    animation: scan-pulse 2s infinite;
+}
+
+@keyframes scan-pulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.02);
+        opacity: 0.8;
+    }
+}
+
+/* Data Table Enhancements */
+.aircraft-row {
+    transition: all 0.2s ease;
+}
+
+.aircraft-row:hover {
+    background: var(--panel-bg);
+    transform: translateX(2px);
+}
+
+.aircraft-row.new {
+    animation: new-row-highlight 2s ease;
+}
+
+@keyframes new-row-highlight {
+    0% { 
+        background: rgba(0, 255, 0, 0.3);
+        transform: translateX(-5px);
+    }
+    100% { 
+        background: transparent;
+        transform: translateX(0);
+    }
+}
+
+/* Coordinate Display */
+.coordinates-display {
+    font-family: 'SF Mono', 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+/* Countdown Timer */
+.countdown {
+    color: var(--warning-yellow);
+    font-weight: bold;
+    animation: countdown-pulse 1s infinite;
+}
+
+@keyframes countdown-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.countdown.urgent {
+    color: var(--alert-red);
+    animation: countdown-urgent 0.5s infinite;
+}
+
+@keyframes countdown-urgent {
+    0%, 100% { 
+        color: var(--alert-red);
+        transform: scale(1);
+    }
+    50% { 
+        color: var(--warning-yellow);
+        transform: scale(1.1);
+    }
+}
+
+/* Modal Enhancements */
+.modal-overlay {
+    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.target-info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 15px;
+    align-items: center;
+}
+
+.target-label {
+    color: var(--text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.target-value {
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* Sound Toggle */
+.sound-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.sound-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sound-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--bg-tertiary);
+    transition: .4s;
+    border: 1px solid var(--border-color);
+}
+
+.sound-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--text-dim);
+    transition: .4s;
+}
+
+input:checked + .sound-slider {
+    background-color: var(--text-primary);
+}
+
+input:checked + .sound-slider:before {
+    transform: translateX(20px);
+    background-color: var(--bg-primary);
+}
+
+/* Range Input Styling */
+.range-input {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg-tertiary);
+    outline: none;
+    border: 1px solid var(--border-color);
+}
+
+.range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--text-primary);
+    cursor: pointer;
+}
+
+.range-input::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--text-primary);
+    cursor: pointer;
+    border: none;
+    appearance: none;
+}
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 2px;
+    font-size: 9px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--text-primary);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Alert History */
+.alert-history {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.alert-item {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alert-item:last-child {
+    border-bottom: none;
+}
+
+.alert-time {
+    color: var(--text-dim);
+}
+
+.alert-callsign {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 1024px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: 300px 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .target-data {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        min-width: 90%;
+        margin: 10px;
+    }
+    
+    .settings-panel {
+        min-width: 90%;
+        margin: 10px;
+    }
+}

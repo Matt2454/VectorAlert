@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorAlert Browser Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #00ff00;
+            margin: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #00ff00;
+        }
+        .pass {
+            color: #00ff00;
+        }
+        .fail {
+            color: #ff0000;
+        }
+        .info {
+            color: #ffff00;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px;
+            font-family: monospace;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <h1>VectorAlert Browser Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Aircraft Database Test</h2>
+        <div id="db-test">Click to test...</div>
+        <button onclick="testAircraftDB()">Test Database</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Geolocation Test</h2>
+        <div id="geo-test">Click to test...</div>
+        <button onclick="testGeolocation()">Test Geolocation</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. API Connectivity Test</h2>
+        <div id="api-test">Click to test...</div>
+        <button onclick="testAPI()">Test API</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Notification Test</h2>
+        <div id="notif-test">Click to test...</div>
+        <button onclick="testNotifications()">Test Notifications</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Audio Test</h2>
+        <div id="audio-test">Click to test...</div>
+        <button onclick="testAudio()">Test Audio</button>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Main Application Test</h2>
+        <div id="app-test">Click to test...</div>
+        <button onclick="testMainApp()">Test Main App</button>
+    </div>
+
+    <script>
+        // Test 1: Aircraft Database
+        async function testAircraftDB() {
+            const result = document.getElementById('db-test');
+            result.innerHTML = '<span class="info">Testing...</span>';
+            
+            try {
+                const response = await fetch('./data/aircraft-db.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.aircraft_types) {
+                    throw new Error('Missing aircraft_types property');
+                }
+                
+                const aircraftCount = Object.keys(data.aircraft_types).length;
+                const sampleAircraft = Object.entries(data.aircraft_types).slice(0, 3);
+                
+                // Validate ICAO24 format
+                const invalidKeys = Object.keys(data.aircraft_types).filter(key => !/^[a-f0-9]{6}$/i.test(key));
+                
+                let html = `<span class="pass">✓ Database loaded successfully</span><br>`;
+                html += `<span class="info">Aircraft types: ${aircraftCount}</span><br>`;
+                html += `<span class="info">Sample: ${sampleAircraft.map(([icao, model]) => `${icao}=${model}`).join(', ')}</span><br>`;
+                
+                if (invalidKeys.length > 0) {
+                    html += `<span class="fail">✗ ${invalidKeys.length} invalid ICAO24 codes</span>`;
+                } else {
+                    html += `<span class="pass">✓ All ICAO24 codes valid</span>`;
+                }
+                
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = `<span class="fail">✗ Database test failed: ${error.message}</span>`;
+            }
+        }
+
+        // Test 2: Geolocation
+        function testGeolocation() {
+            const result = document.getElementById('geo-test');
+            result.innerHTML = '<span class="info">Testing...</span>';
+            
+            if (!('geolocation' in navigator)) {
+                result.innerHTML = '<span class="fail">✗ Geolocation API not available</span>';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude, accuracy } = position.coords;
+                    result.innerHTML = `
+                        <span class="pass">✓ Geolocation working</span><br>
+                        <span class="info">Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}</span><br>
+                        <span class="info">Accuracy: ${accuracy.toFixed(0)}m</span>
+                    `;
+                },
+                (error) => {
+                    result.innerHTML = `<span class="fail">✗ Geolocation error: ${error.message}</span>`;
+                }
+            );
+        }
+
+        // Test 3: API Connectivity
+        async function testAPI() {
+            const result = document.getElementById('api-test');
+            result.innerHTML = '<span class="info">Testing...</span>';
+            
+            try {
+                const response = await fetch('https://opensky-network.org/api/states/all');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const aircraftCount = data.states ? data.states.length : 0;
+                
+                result.innerHTML = `
+                    <span class="pass">✓ OpenSky API reachable</span><br>
+                    <span class="info">Aircraft in response: ${aircraftCount}</span><br>
+                    <span class="info">Response time: ${Date.now() - performance.now()}ms</span>
+                `;
+            } catch (error) {
+                result.innerHTML = `<span class="fail">✗ API test failed: ${error.message}</span>`;
+            }
+        }
+
+        // Test 4: Notifications
+        async function testNotifications() {
+            const result = document.getElementById('notif-test');
+            result.innerHTML = '<span class="info">Testing...</span>';
+            
+            if (!('Notification' in window)) {
+                result.innerHTML = '<span class="fail">✗ Notification API not available</span>';
+                return;
+            }
+            
+            if (Notification.permission === 'granted') {
+                result.innerHTML = '<span class="pass">✓ Notifications already granted</span>';
+                return;
+            }
+            
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    result.innerHTML = '<span class="pass">✓ Notifications granted</span>';
+                } else {
+                    result.innerHTML = '<span class="fail">✗ Notifications denied</span>';
+                }
+            } else {
+                result.innerHTML = '<span class="fail">✗ Notifications previously denied</span>';
+            }
+        }
+
+        // Test 5: Audio
+        function testAudio() {
+            const result = document.getElementById('audio-test');
+            result.innerHTML = '<span class="info">Testing...</span>';
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create a simple test tone
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 440; // A4 note
+                gainNode.gain.value = 0.1; // Low volume
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5); // Play for 0.5 seconds
+                
+                result.innerHTML = '<span class="pass">✓ Audio system working (test tone played)</span>';
+            } catch (error) {
+                result.innerHTML = `<span class="fail">✗ Audio test failed: ${error.message}</span>`;
+            }
+        }
+
+        // Test 6: Main Application
+        async function testMainApp() {
+            const result = document.getElementById('app-test');
+            result.innerHTML = '<span class="info">Testing...</span>';
+            
+            try {
+                // Check if main app file exists and can be loaded
+                const response = await fetch('./index.html');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const html = await response.text();
+                
+                // Check for key elements
+                const requiredElements = [
+                    'id="app"',
+                    'id="radar"',
+                    'id="aircraft-table"',
+                    'id="status-bar"',
+                    'js/app.js'
+                ];
+                
+                const missingElements = requiredElements.filter(element => !html.includes(element));
+                
+                if (missingElements.length === 0) {
+                    result.innerHTML = `
+                        <span class="pass">✓ Main application structure valid</span><br>
+                        <span class="info">All required elements found</span><br>
+                        <a href="./index.html" target="_blank" style="color: #00ff00;">Open Main Application</a>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <span class="fail">✗ Missing elements: ${missingElements.join(', ')}</span>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `<span class="fail">✗ Main app test failed: ${error.message}</span>`;
+            }
+        }
+
+        // Auto-run database test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            testAircraftDB();
+        });
+    </script>
+</body>
+</html>
